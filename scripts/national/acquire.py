@@ -13,7 +13,8 @@ from model import PRETRAINED
 
 DATASET = 'JJMack/pokemon-classification-gen1-9'
 REVISION = '959ff557b102fc3b4f912d0ca769273be5b9ca7f'
-# Recorded by the original campaign (scripts/replacement/acquire.py).
+# Recorded by the original campaign (scripts/replacement/acquire.py). The shards sit at the repo root
+# (train 13,188 / validation 2,198 / test 2,530 rows; ~3.1 GB total).
 EXPECTED = {
     'train.parquet': '74e32dc22e51789fb46b4873c86a1a1b4dcdbe77a1f30a379fd01597784b4314',
     'test.parquet': '4b812cf954e8e69479eaeb0f8c88d24b9d0796c898d88f76867c82fba1d74313',
@@ -64,7 +65,7 @@ def main():
         folder = ROOT / DATASET.replace('/', '--')
         records.append(fetch(f'https://huggingface.co/datasets/{DATASET}/resolve/{REVISION}/README.md', folder / 'README.md'))
         for name, digest in EXPECTED.items():
-            records.append(fetch(f'https://huggingface.co/datasets/{DATASET}/resolve/{REVISION}/data/{name}', folder / name, digest))
+            records.append(fetch(f'https://huggingface.co/datasets/{DATASET}/resolve/{REVISION}/{name}', folder / name, digest))
     if a.what in ('all', 'pretrained'):
         for arch, (name, url) in PRETRAINED.items():
             records.append(fetch(url, ROOT / 'torchvision' / name))

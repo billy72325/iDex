@@ -32,7 +32,7 @@ bash scripts/national/run.sh efficientnet_b0 20
 ```
 
 Without a container, install a CUDA 13 aarch64 wheel from https://pytorch.org/get-started/locally/ into a venv and
-point `IDEX_TRAIN_PYTHON` at it. Expect roughly 25k–30k images; EfficientNet-B0 at 224 px, batch 128, runs an epoch
+point `IDEX_TRAIN_PYTHON` at it. The three shards hold 17,916 rows (train 13,188 / validation 2,198 / test 2,530) covering all 1,025 species with 3–40 images each; 66 Gen VIII–IX species have fewer than 5 training images, so expect those to dominate `worst_species`. EfficientNet-B0 at 224 px, batch 128, runs an epoch
 in a few minutes on the GX10, so 20 epochs is well under two hours. `--max-minutes` and `--resume` let you stop and
 continue.
 

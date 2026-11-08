@@ -3,6 +3,11 @@
 Output: artifacts/national/data/images/<dex id>/<n>.png plus manifest.jsonl with
 one row per image: {id, path, split, source_split, group, shiny, sha256}.
 
+Dataset columns (verified 2026-11-09): file_name, image_data, label (class index == National Dex id,
+0 and 1026 are placeholder classes), name, generation, Type 1/2, stats, shiny ("yes"/"no").
+Every species has 3–33 train images (66 species have under 5, all Gen VIII–IX), plus the
+validation/test shards; all three shards are pooled here and re-split by group.
+
 Splitting is done per species and per *group* (the publisher's file name without
 its shiny suffix) so a normal/shiny pair of the same artwork never straddles
 train and validation. Exact-duplicate bytes are kept once.
@@ -62,7 +67,7 @@ def main():
                     dex = int(item['label'])
                     if dex not in known:
                         continue
-                    image = item.get('image', item.get('image_data'))
+                    image = item.get('image_data', item.get('image'))
                     raw = image if isinstance(image, bytes) else image.get('bytes')
                     if not raw:
                         raise ValueError('no embedded bytes')
@@ -77,7 +82,7 @@ def main():
                     if not target.exists():
                         decode(raw, a.size).save(target, optimize=True)
                     rows.append(dict(id=dex, path=str(target), source_split=file.stem, group=f'{dex}:{group}',
-                                     shiny=bool(item.get('shiny')), sha256=digest))
+                                     shiny=str(item.get('shiny', '')).lower() in ('yes', 'true', '1'), sha256=digest))
                 except Exception as e:
                     errors.append(dict(file=file.name, error=str(e)))
         print(f'{file.name}: {len(rows)} images so far', flush=True)
