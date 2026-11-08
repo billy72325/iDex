@@ -2,13 +2,13 @@
 
 ## Project Structure & Module Organization
 
-iDex is a native, bilingual SwiftUI Pokédex for iPhone Duo. The app supports iOS 27+; hinge observation uses iOS 27.1 APIs.
+iDex is a native, multilingual SwiftUI Pokédex for iPhone Duo. The app supports iOS 27+; hinge observation uses iOS 27.1 APIs.
 
 - `iDex/iDexApp.swift` and `ContentView.swift`: app entry and scanner composition.
 - `iDex/Interface/`: views, device styling, Duo geometry, and `DexStore` state.
 - `iDex/Services/`: camera capture, sound, and speech.
 - `iDex/Catalog/` and `Recognition/`: catalog types, classifier actor, model, labels, and provenance.
-- `iDex/Resources/` and `Assets.xcassets/`: bilingual catalog, sprites, fonts, privacy strings, and app icons.
+- `iDex/Resources/` and `Assets.xcassets/`: multilingual catalog, sprites, fonts, privacy strings, and app icons.
 - `iDexTests/`: unit and inference tests; `iDexUITests/`: interaction tests.
 - `scripts/`: catalog, model, and icon regeneration tools.
 
@@ -30,7 +30,7 @@ Run `python3 scripts/catalog/build_catalog.py` to regenerate catalog resources a
 
 ## Coding Style & Naming Conventions
 
-Match existing Swift style: four-space indentation, `UpperCamelCase` types, `lowerCamelCase` members, and filenames matching their primary type. Keep UI state on `@MainActor` and inference inside `PokemonClassifier`. Use existing language helpers for English and Simplified Chinese copy. No formatter or linter configuration is checked in; use Xcode formatting and `git diff --check`.
+Match existing Swift style: four-space indentation, `UpperCamelCase` types, `lowerCamelCase` members, and filenames matching their primary type. Keep UI state on `@MainActor` and inference inside `PokemonClassifier`. Use existing language helpers (`text(en, zhHans, zhHant, ja)`) for English, Simplified Chinese, Traditional Chinese, and Japanese copy. No formatter or linter configuration is checked in; use Xcode formatting and `git diff --check`.
 
 ## Testing Guidelines
 

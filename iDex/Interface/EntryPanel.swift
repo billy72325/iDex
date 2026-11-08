@@ -11,7 +11,7 @@ struct EntryPanel: View {
         VStack(spacing: 10) {
             HStack(spacing: 12) {
                 Screw()
-                Text(store.text("POKÉMON RESEARCH", "宝可梦研究终端", "ポケモンリサーチ"))
+                Text(store.text("POKÉMON RESEARCH", "宝可梦研究终端", "寶可夢研究終端", "ポケモンリサーチ"))
                     .font(PixelFont.font(size: store.language == .en ? 9 : 16, language: store.language))
                     .foregroundStyle(DexTheme.cream.opacity(0.85))
                 Spacer()
@@ -49,20 +49,20 @@ struct EntryPanel: View {
                             }
                         }.frame(maxWidth: .infinity, alignment: .leading)
                         HStack {
-                            metric(store.text("HEIGHT", "身高", "たかさ"), String(format: "%.1f m", pokemon.height))
+                            metric(store.text("HEIGHT", "身高", "身高", "たかさ"), String(format: "%.1f m", pokemon.height))
                             Spacer()
-                            metric(store.text("WEIGHT", "体重", "おもさ"), String(format: "%.1f kg", pokemon.weight))
+                            metric(store.text("WEIGHT", "体重", "體重", "おもさ"), String(format: "%.1f kg", pokemon.weight))
                             Spacer()
-                            metric(store.text("SEEN", "发现", "発見"), store.seenIDs.contains(pokemon.id) ? "●" : "—")
+                            metric(store.text("SEEN", "发现", "發現", "発見"), store.seenIDs.contains(pokemon.id) ? "●" : "—")
                         }
                         Rectangle().fill(DexTheme.ink.opacity(0.25)).frame(height: 1)
                         HStack {
-                            Text(showStats ? store.text("BASE STATS", "基础能力", "種族値") : store.text("FIELD NOTES", "观察记录", "図鑑説明"))
+                            Text(showStats ? store.text("BASE STATS", "基础能力", "基礎能力", "種族値") : store.text("FIELD NOTES", "观察记录", "觀察紀錄", "図鑑説明"))
                                 .font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
                             Spacer()
                             Button { showStats.toggle(); store.audio.play(.button) } label: {
                                 Image(systemName: showStats ? "text.alignleft" : "chart.bar.xaxis").frame(width: 32, height: 28)
-                            }.buttonStyle(.plain).accessibilityLabel(store.text("Toggle base stats", "切换基础能力", "種族値の表示を切り替える"))
+                            }.buttonStyle(.plain).accessibilityLabel(store.text("Toggle base stats", "切换基础能力", "切換基礎能力", "種族値の表示を切り替える"))
                         }
                         if showStats {
                             VStack(spacing: 7) {
@@ -91,36 +91,36 @@ struct EntryPanel: View {
                 }
                 HStack(spacing: 12) {
                     Button { store.step(-1) } label: { Image(systemName: "arrowtriangle.left.fill").frame(width: 17) }
-                        .accessibilityLabel(store.text("Previous Pokémon", "上一个宝可梦", "前のポケモン"))
+                        .accessibilityLabel(store.text("Previous Pokémon", "上一个宝可梦", "上一隻寶可夢", "前のポケモン"))
                     Button { store.step(1) } label: { Image(systemName: "arrowtriangle.right.fill").frame(width: 17) }
-                        .accessibilityLabel(store.text("Next Pokémon", "下一个宝可梦", "次のポケモン"))
+                        .accessibilityLabel(store.text("Next Pokémon", "下一个宝可梦", "下一隻寶可夢", "次のポケモン"))
                     Spacer(minLength: 0)
                     Button { store.speak() } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "speaker.wave.2.fill")
-                            Text(store.text("READ", "朗读", "読み上げ")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
+                            Text(store.text("READ", "朗读", "朗讀", "読み上げ")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
                         }
                     }.accessibilityIdentifier("read-button")
                     Button { store.audio.stopSpeaking() } label: { Image(systemName: "stop.fill") }
-                        .accessibilityLabel(store.text("Stop reading", "停止朗读", "読み上げを停止"))
+                        .accessibilityLabel(store.text("Stop reading", "停止朗读", "停止朗讀", "読み上げを停止"))
                 }.buttonStyle(HardwareButtonStyle())
                 HStack {
                     Button { store.showingCatalog = true; store.audio.play(.button) } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "square.grid.2x2.fill")
-                            Text(store.text("BROWSE 151", "浏览151种", "全151種を見る")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
+                            Text(store.text("BROWSE 151", "浏览151种", "瀏覽151種", "全151種を見る")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
                         }
                     }.buttonStyle(.plain).foregroundStyle(DexTheme.cream).accessibilityIdentifier("catalog-button")
                     Spacer()
-                    Text(store.confidence.map { "\(Int($0 * 100))%" } ?? store.text("GEN. I", "第一世代", "第1世代"))
+                    Text(store.confidence.map { "\(Int($0 * 100))%" } ?? store.text("GEN. I", "第一世代", "第一世代", "第1世代"))
                         .font(DexTheme.pixel(7)).foregroundStyle(.white.opacity(0.5))
                     if let onClose {
                         Button(action: onClose) {
-                            Text(store.text("CLOSE", "关闭", "閉じる"))
+                            Text(store.text("CLOSE", "关闭", "關閉", "閉じる"))
                                 .font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
                         }
                         .buttonStyle(HardwareButtonStyle())
-                        .accessibilityLabel(store.text("Close record", "关闭记录", "図鑑を閉じる"))
+                        .accessibilityLabel(store.text("Close record", "关闭记录", "關閉紀錄", "図鑑を閉じる"))
                         .accessibilityIdentifier("close-record")
                     } else {
                         SpeakerGrille().scaleEffect(0.8).frame(width: 50)
@@ -131,7 +131,7 @@ struct EntryPanel: View {
             HStack {
                 Screw()
                 Spacer()
-                Text(store.text("SILPH CO. · PERSONAL FIELD SYSTEM", "西尔佛公司 · 个人野外系统", "シルフカンパニー · 個人用フィールドシステム"))
+                Text(store.text("SILPH CO. · PERSONAL FIELD SYSTEM", "西尔佛公司 · 个人野外系统", "西爾佛公司 · 個人野外系統", "シルフカンパニー · 個人用フィールドシステム"))
                     .font(PixelFont.font(size: store.language == .en ? 5 : 11, language: store.language))
                     .foregroundStyle(Color.black.opacity(0.45)).shadow(color: .white.opacity(0.18), radius: 0, y: 1)
                     .accessibilityIdentifier("record-footer")
