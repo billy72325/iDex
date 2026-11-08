@@ -10,7 +10,7 @@ iDex is a native, multilingual SwiftUI Pokédex for iPhone Duo. The app supports
 - `iDex/Catalog/` and `Recognition/`: catalog types, classifier actor, model, labels, and provenance.
 - `iDex/Resources/` and `Assets.xcassets/`: multilingual catalog, sprites, fonts, privacy strings, and app icons.
 - `iDexTests/`: unit and inference tests; `iDexUITests/`: interaction tests.
-- `scripts/`: catalog, model, and icon regeneration tools.
+- `scripts/`: catalog, model, and icon regeneration tools; `scripts/national/` trains the 1,025-class replacement classifier on a CUDA GPU.
 
 ## Build, Test, and Development Commands
 

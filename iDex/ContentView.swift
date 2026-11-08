@@ -106,7 +106,7 @@ private struct ScannerPanel: View {
                 HStack {
                     pixel(store.text("OPTICAL SENSOR", "光学传感器", "光學感測器", "光学センサー"), 7).foregroundStyle(.white.opacity(0.65))
                     Spacer()
-                    pixel(store.text("KANTO / 01", "关都 / 01", "關都 / 01", "カントー / 01"), 7).foregroundStyle(.white.opacity(0.65))
+                    pixel(store.text("NATIONAL / \(PokemonCatalog.shared.count)", "全国 / \(PokemonCatalog.shared.count)", "全國 / \(PokemonCatalog.shared.count)", "全国 / \(PokemonCatalog.shared.count)"), 7).foregroundStyle(.white.opacity(0.65))
                 }.frame(width: proxy.size.width - 98).offset(x: 49, y: 146)
                 viewfinder(side: side).frame(width: side + 34, height: side + 34)
                     .position(x: proxy.size.width / 2, y: layout.viewfinder.midY)
@@ -292,7 +292,7 @@ private struct ScannerPanel: View {
                         pixel(compact ? store.text("OPEN RECORD", "打开记录", "開啟紀錄", "図鑑を開く") : store.text("POKÉDEX", "宝可梦图鉴", "寶可夢圖鑑", "ポケモン図鑑"), 8)
                     }
                 }.buttonStyle(.plain).accessibilityIdentifier("record-button")
-                pixel(store.text("\(store.seenIDs.count) SEEN · 151 SPECIES", "已发现 \(store.seenIDs.count) · 共151种", "已發現 \(store.seenIDs.count) · 共151種", "発見 \(store.seenIDs.count) · 全151種"), 6)
+                pixel(store.text("\(store.seenIDs.count) SEEN · \(PokemonCatalog.shared.count) SPECIES", "已发现 \(store.seenIDs.count) · 共\(PokemonCatalog.shared.count)种", "已發現 \(store.seenIDs.count) · 共\(PokemonCatalog.shared.count)種", "発見 \(store.seenIDs.count) · 全\(PokemonCatalog.shared.count)種"), 6)
                     .foregroundStyle(.white.opacity(0.5))
             }.foregroundStyle(DexTheme.cream)
             Spacer()

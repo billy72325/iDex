@@ -5,13 +5,19 @@ import CoreText
 
 @MainActor
 struct CatalogTests {
-    @Test func catalogIncludesAllOriginalKantoSpecies() {
+    @Test func catalogIncludesAllNationalDexSpecies() throws {
         let entries = PokemonCatalog.shared.entries
-        #expect(entries.map(\.id) == Array(1...151))
-        #expect(Set(entries.map(\.englishName)).count == 151)
-        #expect(Set(entries.map(\.chineseName)).count == 151)
-        #expect(Set(entries.map(\.traditionalChineseName)).count == 151)
-        #expect(Set(entries.map(\.japaneseName)).count == 151)
+        #expect(entries.count == 1025)
+        #expect(entries.map(\.id) == Array(1...1025))
+        #expect(Set(entries.map(\.englishName)).count == 1025)
+        #expect(Set(entries.map(\.chineseName)).count == 1025)
+        #expect(Set(entries.map(\.traditionalChineseName)).count == 1025)
+        #expect(Set(entries.map(\.japaneseName)).count == 1025)
+        #expect(entries.allSatisfy { (1...9).contains($0.generation) })
+        #expect(entries.filter(\.isRecognizable).map(\.id) == Array(1...151))
+        #expect(PokemonCatalog.recognizableIDs.count == 151)
+        #expect(try #require(PokemonCatalog.shared.pokemon(id: 152)).generationLabel(in: .en) == "GEN. II")
+        #expect(try #require(PokemonCatalog.shared.pokemon(id: 1025)).regionName(in: .zhHant) == "帕底亞")
         #expect(entries.allSatisfy { !$0.englishDescription.isEmpty && !$0.chineseDescription.isEmpty })
         #expect(entries.allSatisfy { !$0.englishGenus.isEmpty && !$0.chineseGenus.isEmpty })
         #expect(entries.allSatisfy { !$0.japaneseDescription.isEmpty && !$0.japaneseGenus.isEmpty })
@@ -121,7 +127,7 @@ struct CatalogTests {
         #expect(catalog.search("皮卡丘", language: .en).map(\.id) == [25])
         #expect(catalog.search("#025", language: .en).map(\.id) == [25])
         #expect(catalog.search("  025 \n", language: .zhHans).map(\.id) == [25])
-        #expect(catalog.search("", language: .en).count == 151)
+        #expect(catalog.search("", language: .en).count == 1025)
         #expect(catalog.search("not a pokemon", language: .en).isEmpty)
     }
 

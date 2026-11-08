@@ -1,17 +1,17 @@
 # Offline catalog and visual assets
 
-The app bundles the original 151 Kanto species. Names, genera, English, Simplified Chinese, Traditional Chinese, and Japanese Pokédex text, types, height, weight, and base stats were fetched from the PokeAPI data repository on 24 October 2026:
+The app bundles all 1,025 National Pokédex species (Generations I–IX); the recognition model covers the original 151 Kanto species. Names, genera, English, Simplified Chinese, Traditional Chinese, and Japanese Pokédex text, types, height, weight, and base stats were fetched from the PokeAPI data repository on 24 October 2026:
 
 - https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv
 - API/data documentation: https://pokeapi.co/docs/v2
 
-`Resources/pokemon-kanto.json` stores metric values (metres and kilograms). Descriptions use the latest available entry for each language in the upstream data. English, Chinese, and Japanese text can therefore come from different game versions. Japanese uses upstream language ID 11 (`ja`, including kanji), with whitespace normalized in the same way as English. Traditional Chinese uses upstream language ID 4 (`zh-Hant`, official Taiwan names), fetched on 9 November 2026. The catalog is bundled; browsing and speech require no API call.
+`Resources/pokemon-national.json` stores metric values (plus a `generation` field) (metres and kilograms). Descriptions use the latest available entry for each language in the upstream data. English, Chinese, and Japanese text can therefore come from different game versions. Japanese uses upstream language ID 11 (`ja`, including kanji), with whitespace normalized in the same way as English. Traditional Chinese uses upstream language ID 4 (`zh-Hant`, official Taiwan names), fetched on 9 November 2026. Upstream has no Chinese Pokédex text for 303 species (mostly Generations II–V and IX) and no Japanese text for 127 Generation VIII–IX species; the Traditional Chinese entries for those 303 were translated from the English text for this project and the Simplified Chinese derived from them with OpenCC, while the Japanese entries fall back to English. The catalog is bundled; browsing and speech require no API call.
 
 Sprites were downloaded from the Pokémon Database's Black & White sprite archive, as requested. `Resources/sprite-sources.json` records the exact URL for every sprite. A PokeAPI sprite fallback is supported by the rebuild script for species whose Pokémon Database URL is unavailable.
 
 - https://pokemondb.net/sprites
 - https://img.pokemondb.net/sprites/black-white/normal/pikachu.png
-- Fallback source: https://github.com/PokeAPI/sprites
+- Fallback source: https://github.com/PokeAPI/sprites (species #152–#1025 use the PokéAPI default front sprites; #1–#151 keep the Pokémon Database Black/White sprites)
 
 Cries for all 151 species come from [PokéAPI/cries](https://github.com/PokeAPI/cries) at commit `b3a9044bb839b5e3152aaa536c7b463a0fcf0140`, using `cries/pokemon/latest/{id}.ogg`. The upstream repository credits Pokémon Showdown, Veekun, and The Sounds Resource. `Resources/Cries/cry-sources.json` records each source URL, source and output SHA-256 hashes, species ID, and PCM frame count. The files are converted to mono 22,050 Hz, 16-bit PCM WAV without trimming or normalizing. Some upstream `.ogg` paths contain MP3 audio; conversion detects the actual format. Run `python3 scripts/audio/build_cries.py` with `ffmpeg` installed to regenerate them. The compiled app needs no decoder package or network access.
 

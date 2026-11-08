@@ -86,8 +86,31 @@ struct Pokemon: Identifiable, Codable, Hashable {
     let traditionalChineseGenus: String
     let japaneseGenus: String
     let stats: [PokemonStat]
+    /// National Pokédex generation that introduced the species (1–9).
+    let generation: Int
 
     var number: String { String(format: "%03d", id) }
+    /// The bundled classifier recognizes the original Kanto species only.
+    var isRecognizable: Bool { PokemonCatalog.recognizableIDs.contains(id) }
+
+    func generationLabel(in language: AppLanguage) -> String {
+        let roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
+        let han = ["一", "二", "三", "四", "五", "六", "七", "八", "九"]
+        let index = max(1, min(generation, roman.count)) - 1
+        return language.text("GEN. \(roman[index])", "第\(han[index])世代", "第\(han[index])世代", "第\(generation)世代")
+    }
+
+    func regionName(in language: AppLanguage) -> String {
+        let index = max(1, min(generation, Self.regionNames.count)) - 1
+        let names = Self.regionNames[index]
+        return language.text(names.0, names.1, names.2, names.3)
+    }
+
+    private static let regionNames: [(String, String, String, String)] = [
+        ("KANTO", "关都", "關都", "カントー"), ("JOHTO", "城都", "城都", "ジョウト"), ("HOENN", "丰缘", "豐緣", "ホウエン"),
+        ("SINNOH", "神奥", "神奧", "シンオウ"), ("UNOVA", "合众", "合眾", "イッシュ"), ("KALOS", "卡洛斯", "卡洛斯", "カロス"),
+        ("ALOLA", "阿罗拉", "阿羅拉", "アローラ"), ("GALAR", "伽勒尔", "伽勒爾", "ガラル"), ("PALDEA", "帕底亚", "帕底亞", "パルデア")
+    ]
     var spriteName: String { "pokemon-\(number)" }
     var totalStats: Int { stats.reduce(0) { $0 + $1.value } }
 
@@ -156,7 +179,16 @@ struct Pokemon: Identifiable, Codable, Hashable {
 
 struct PokemonCatalog {
     static let shared = PokemonCatalog()
+    /// Species the bundled Core ML classifier can identify, read from `pokemon_labels.json`.
+    static let recognizableIDs: Set<Int> = {
+        struct Label: Decodable { let id: Int }
+        guard let url = Bundle.main.url(forResource: "pokemon_labels", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let labels = try? JSONDecoder().decode([Label].self, from: data) else { return [] }
+        return Set(labels.map(\.id))
+    }()
     let entries: [Pokemon]
+    var count: Int { entries.count }
     private let entriesByID: [Int: Pokemon]
     private let searchIndex: [SearchEntry]
 
@@ -179,10 +211,10 @@ struct PokemonCatalog {
     }
 
     private init(bundle: Bundle = .main) {
-        guard let url = bundle.url(forResource: "pokemon-kanto", withExtension: "json"),
+        guard let url = bundle.url(forResource: "pokemon-national", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let decoded = try? JSONDecoder().decode([Pokemon].self, from: data) else {
-            assertionFailure("The bundled Kanto catalog is missing or invalid.")
+            assertionFailure("The bundled National Pokédex catalog is missing or invalid.")
             entries = []
             entriesByID = [:]
             searchIndex = []

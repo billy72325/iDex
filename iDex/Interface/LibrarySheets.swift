@@ -38,7 +38,7 @@ struct CatalogSheet: View {
                 }
             }
             .background(DexTheme.charcoal)
-            .navigationTitle(store.text("Kanto archive", "关都图鉴", "關都圖鑑", "カントー図鑑"))
+            .navigationTitle(store.text("National archive", "全国图鉴", "全國圖鑑", "全国図鑑"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: store.text("Name, number or type", "名称、编号或属性", "名稱、編號或屬性", "名前・番号・タイプ"))
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button(store.text("Done", "完成", "完成", "完了")) { store.showingCatalog = false }.accessibilityIdentifier("settings-done") } }

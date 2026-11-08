@@ -23,7 +23,7 @@ No wild Pokémon were inconvenienced.
 - **151 Kanto Pokémon.** Pixel sprites, stats, field notes, and cries.
 - **Scan a photo or use the camera.** Recognition runs on your iPhone; photos stay in memory.
 - **Unfold for more room.** The archive sits beside the scanner on the inner display.
-- **English, 简体中文, 繁體中文, and 日本語.** All 151 entries include localized names, descriptions, types, and stats. Search by name, number, or type; listen using installed system voices.
+- **English, 简体中文, 繁體中文, and 日本語.** All 1,025 National Pokédex entries include localized names, descriptions, types, and stats; the bundled camera model recognizes the original 151 Kanto species. Search by name, number, or type; listen using installed system voices.
 - **A local discovery log.** Your progress survives closing the app. Your research grant remains imaginary.
 
 ## Choose your language

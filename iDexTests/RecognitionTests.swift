@@ -137,7 +137,7 @@ struct RecognitionTests {
 
         #expect(result.accepted == nil)
         #expect(result.candidates.count == 3)
-        #expect(result.candidates.allSatisfy { (1...151).contains($0.dexID) })
+        #expect(result.candidates.allSatisfy { PokemonCatalog.recognizableIDs.contains($0.dexID) })
         #expect(result.candidates.allSatisfy { $0.confidence.isFinite && (0...1).contains($0.confidence) })
 
         let soundWasEnabled = DeviceAudio.shared.isSoundEnabled
@@ -164,7 +164,7 @@ struct RecognitionTests {
         #expect(store.entryStatusTitle == "最可能匹配")
     }
 
-    @Test("Model labels map exactly to the bundled Kanto catalog")
+    @Test("Model labels map onto the bundled catalog and the selected Kanto model")
     func labelCoverageMatchesCatalog() throws {
         struct Label: Decodable {
             let id: Int
@@ -174,7 +174,8 @@ struct RecognitionTests {
         let labels = try JSONDecoder().decode([Label].self, from: Data(contentsOf: url))
 
         #expect(labels.count == 151)
-        #expect(Set(labels.map(\.id)) == Set(PokemonCatalog.shared.entries.map(\.id)))
+        #expect(Set(labels.map(\.id)).isSubset(of: Set(PokemonCatalog.shared.entries.map(\.id))))
+        #expect(Set(labels.map(\.id)) == PokemonCatalog.recognizableIDs)
         #expect(labels.enumerated().allSatisfy { $0.element.id == $0.offset + 1 })
         #expect(labels.allSatisfy { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
         #expect(labels[24].name == "pikachu")

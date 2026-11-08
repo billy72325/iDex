@@ -108,11 +108,11 @@ struct EntryPanel: View {
                     Button { store.showingCatalog = true; store.audio.play(.button) } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "square.grid.2x2.fill")
-                            Text(store.text("BROWSE 151", "浏览151种", "瀏覽151種", "全151種を見る")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
+                            Text(store.text("BROWSE \(PokemonCatalog.shared.count)", "浏览\(PokemonCatalog.shared.count)种", "瀏覽\(PokemonCatalog.shared.count)種", "全\(PokemonCatalog.shared.count)種を見る")).font(PixelFont.font(size: store.language == .en ? 8 : 14, language: store.language))
                         }
                     }.buttonStyle(.plain).foregroundStyle(DexTheme.cream).accessibilityIdentifier("catalog-button")
                     Spacer()
-                    Text(store.confidence.map { "\(Int($0 * 100))%" } ?? store.text("GEN. I", "第一世代", "第一世代", "第1世代"))
+                    Text(store.confidence.map { "\(Int($0 * 100))%" } ?? pokemon.generationLabel(in: store.language))
                         .font(DexTheme.pixel(7)).foregroundStyle(.white.opacity(0.5))
                     if let onClose {
                         Button(action: onClose) {

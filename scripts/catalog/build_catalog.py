@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / '.catalog-cache'
 RESOURCES = ROOT / 'iDex' / 'Resources'
 CSV_BASE = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/'
-FILES = ['pokemon.csv', 'pokemon_species_names.csv', 'pokemon_species_flavor_text.csv', 'pokemon_types.csv', 'types.csv', 'pokemon_stats.csv', 'stats.csv']
+MAX_ID = 1025
+FILES = ['pokemon.csv', 'pokemon_species.csv', 'pokemon_species_names.csv', 'pokemon_species_flavor_text.csv', 'pokemon_types.csv', 'types.csv', 'pokemon_stats.csv', 'stats.csv']
 
 def download(url, path):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -38,18 +39,19 @@ def main():
         csvs = dict(zip(FILES, pool.map(rows, FILES)))
     species_names = {(int(r['pokemon_species_id']), int(r['local_language_id'])): r for r in csvs['pokemon_species_names.csv']}
     type_names = {r['id']: r['identifier'] for r in csvs['types.csv']}
+    generation_of = {int(r['id']): int(r['generation_id']) for r in csvs['pokemon_species.csv']}
     stat_names = {r['id']: r['identifier'] for r in csvs['stats.csv']}
     flavor = {}
     # Retain the latest available text in each language (CSV is ordered by version id).
     for r in csvs['pokemon_species_flavor_text.csv']:
-        if int(r['species_id']) <= 151 and r['language_id'] in ('4', '9', '11', '12'):
+        if int(r['species_id']) <= MAX_ID and r['language_id'] in ('1', '4', '9', '11', '12'):
             normalized = ' '.join(r['flavor_text'].replace('\f', ' ').split())
             flavor[(int(r['species_id']), int(r['language_id']))] = normalized.replace(' ', '') if r['language_id'] in ('4', '12') else normalized
     entries = []
     slug_by_id = {}
     for p in csvs['pokemon.csv']:
         number = int(p['id'])
-        if not 1 <= number <= 151:
+        if not 1 <= number <= MAX_ID:
             continue
         en = species_names[(number, 9)]
         zh = species_names[(number, 12)]
@@ -66,21 +68,24 @@ def main():
             'height': int(p['height']) / 10,
             'weight': int(p['weight']) / 10,
             'englishDescription': flavor[(number, 9)],
-            'chineseDescription': flavor[(number, 12)],
-            'traditionalChineseDescription': flavor[(number, 4)],
-            'japaneseDescription': flavor[(number, 11)],
+            # Upstream lacks Chinese text for 303 species and Japanese text for 127; fall back to English
+            # (Chinese fallbacks are hand-translated in the committed catalog; keep those when rebuilding).
+            'chineseDescription': flavor.get((number, 12), flavor[(number, 9)]),
+            'traditionalChineseDescription': flavor.get((number, 4), flavor[(number, 9)]),
+            'japaneseDescription': flavor.get((number, 11), flavor.get((number, 1), flavor[(number, 9)])),
             'englishGenus': en['genus'],
             'chineseGenus': zh['genus'],
             'traditionalChineseGenus': zht['genus'],
             'japaneseGenus': ja['genus'],
-            'stats': [{'name': stat_names[s['stat_id']], 'value': int(s['base_stat'])} for s in csvs['pokemon_stats.csv'] if int(s['pokemon_id']) == number]
+            'stats': [{'name': stat_names[s['stat_id']], 'value': int(s['base_stat'])} for s in csvs['pokemon_stats.csv'] if int(s['pokemon_id']) == number],
+            'generation': generation_of[number]
         }
         entries.append(entry)
-    assert len(entries) == 151
+    assert len(entries) == MAX_ID
     assert all(p['chineseDescription'] and p['traditionalChineseName'] and p['traditionalChineseDescription'] and p['japaneseName'] and p['japaneseDescription']
                and p['japaneseGenus'] and len(p['stats']) == 6 for p in entries)
     RESOURCES.mkdir(parents=True, exist_ok=True)
-    (RESOURCES / 'pokemon-kanto.json').write_text(json.dumps(entries, ensure_ascii=False, indent=2) + '\n')
+    (RESOURCES / 'pokemon-national.json').write_text(json.dumps(entries, ensure_ascii=False, indent=2) + '\n')
     assets = RESOURCES / 'PokemonSprites.xcassets'
     assets.mkdir(exist_ok=True)
     (assets / 'Contents.json').write_text(json.dumps({'info': {'author': 'xcode', 'version': 1}}, indent=2))
@@ -89,7 +94,9 @@ def main():
         asset = assets / f'pokemon-{number:03d}.imageset'
         path = asset / 'sprite.png'
         slug = slug_by_id[number]
-        urls = [f'https://img.pokemondb.net/sprites/black-white/normal/{slug}.png', f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{number}.png']
+        pokeapi = f'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{number}.png'
+        # Pokémon Database black-white sprites stop at Gen 5 (#649); later species use PokéAPI default sprites.
+        urls = [f'https://img.pokemondb.net/sprites/black-white/normal/{slug}.png', pokeapi] if number <= 649 else [pokeapi]
         for source in urls:
             try:
                 data = download(source, path)

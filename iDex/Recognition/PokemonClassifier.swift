@@ -90,8 +90,9 @@ actor PokemonClassifier {
         }
         guard let labelURL = Bundle.main.url(forResource: "pokemon_labels", withExtension: "json"),
               let loadedLabels = try? JSONDecoder().decode([Label].self, from: Data(contentsOf: labelURL)),
-              loadedLabels.count == 151,
-              Set(loadedLabels.map(\.id)) == Set(1...151) else {
+              !loadedLabels.isEmpty,
+              Set(loadedLabels.map(\.id)).count == loadedLabels.count,
+              loadedLabels.allSatisfy({ PokemonCatalog.shared.pokemon(id: $0.id) != nil }) else {
             throw RecognitionError.invalidLabels
         }
         let configuration = MLModelConfiguration()

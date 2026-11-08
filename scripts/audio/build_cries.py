@@ -62,7 +62,7 @@ def build(entry):
 def main():
     if not shutil.which('ffmpeg'):
         raise SystemExit('Install ffmpeg to regenerate cry assets; the app needs no external dependencies.')
-    entries = json.loads((ROOT / 'iDex/Resources/pokemon-kanto.json').read_text())
+    entries = json.loads((ROOT / 'iDex/Resources/pokemon-national.json').read_text())
     assert {entry['id'] for entry in entries} == set(range(1, 152))
     OUTPUT.mkdir(parents=True, exist_ok=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
