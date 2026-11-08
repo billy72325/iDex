@@ -10,10 +10,12 @@ struct CatalogTests {
         #expect(entries.map(\.id) == Array(1...151))
         #expect(Set(entries.map(\.englishName)).count == 151)
         #expect(Set(entries.map(\.chineseName)).count == 151)
+        #expect(Set(entries.map(\.traditionalChineseName)).count == 151)
         #expect(Set(entries.map(\.japaneseName)).count == 151)
         #expect(entries.allSatisfy { !$0.englishDescription.isEmpty && !$0.chineseDescription.isEmpty })
         #expect(entries.allSatisfy { !$0.englishGenus.isEmpty && !$0.chineseGenus.isEmpty })
         #expect(entries.allSatisfy { !$0.japaneseDescription.isEmpty && !$0.japaneseGenus.isEmpty })
+        #expect(entries.allSatisfy { !$0.traditionalChineseDescription.isEmpty && !$0.traditionalChineseGenus.isEmpty })
         #expect(entries.allSatisfy { $0.height > 0 && $0.weight > 0 })
         #expect(entries.allSatisfy { $0.stats.count == 6 && $0.stats.allSatisfy { $0.value > 0 } })
         #expect(entries.allSatisfy { (1...2).contains($0.types.count) })
@@ -29,7 +31,7 @@ struct CatalogTests {
 
     @Test func allPixelFontsRegisterFromBundledFiles() {
         PixelFont.register()
-        for fontName in [PixelFont.latinName, PixelFont.chineseName, PixelFont.japaneseName] {
+        for fontName in [PixelFont.latinName, PixelFont.chineseName, PixelFont.traditionalChineseName, PixelFont.japaneseName] {
             let font = CTFontCreateWithName(fontName as CFString, 12, nil)
             #expect(CTFontCopyPostScriptName(font) as String == fontName)
         }
@@ -47,10 +49,42 @@ struct CatalogTests {
         }
     }
 
+    @Test func traditionalChineseFontCoversCatalogText() {
+        PixelFont.register()
+        let font = CTFontCreateWithName(PixelFont.traditionalChineseName as CFString, 17, nil)
+        for pokemon in PokemonCatalog.shared.entries {
+            let text = pokemon.traditionalChineseName + pokemon.traditionalChineseGenus + pokemon.traditionalChineseDescription
+            let characters = Array(text.utf16)
+            var glyphs = [CGGlyph](repeating: 0, count: characters.count)
+            #expect(CTFontGetGlyphsForCharacters(font, characters, &glyphs, characters.count),
+                    "Missing Traditional Chinese glyph for \(pokemon.englishName)")
+        }
+    }
+
+    @Test func traditionalChineseCatalogUsesOfficialNames() throws {
+        let catalog = PokemonCatalog.shared
+        let pikachu = try #require(catalog.pokemon(id: 25))
+        #expect(pikachu.name(in: .zhHant) == "皮卡丘")
+        #expect(pikachu.genus(in: .zhHant) == "鼠寶可夢")
+        #expect(pikachu.typeNames(in: .zhHant) == ["電"])
+        #expect(pikachu.spokenEntry(in: .zhHant).hasPrefix("皮卡丘。全國圖鑑編號25。鼠寶可夢。屬性，電。"))
+        #expect(try #require(catalog.pokemon(id: 1)).name(in: .zhHant) == "妙蛙種子")
+        #expect(try #require(catalog.pokemon(id: 6)).typeNames(in: .zhHant) == ["火", "飛行"])
+        #expect(catalog.search("噴火龍", language: .zhHant).map(\.id) == [6])
+        #expect(AppLanguage.zhHant.title == "繁體中文")
+        #expect(AppLanguage.zhHant.localeIdentifier == "zh-Hant")
+        #expect(AppLanguage.zhHant.speechLocale == "zh-TW")
+    }
+
     @Test func languageSelectionResolvesSupportedSystemPreferences() {
         #expect(AppLanguage.preferred(in: ["ja-JP", "en-US"]) == .ja)
         #expect(AppLanguage.preferred(in: ["ja"]) == .ja)
         #expect(AppLanguage.preferred(in: ["zh-Hans-CN", "ja-JP"]) == .zhHans)
+        #expect(AppLanguage.preferred(in: ["zh-Hant-TW", "ja-JP"]) == .zhHant)
+        #expect(AppLanguage.preferred(in: ["zh-TW"]) == .zhHant)
+        #expect(AppLanguage.preferred(in: ["zh-HK"]) == .zhHant)
+        #expect(AppLanguage.preferred(in: ["zh-CN"]) == .zhHans)
+        #expect(AppLanguage.preferred(in: ["zh"]) == .zhHans)
         #expect(AppLanguage.preferred(in: ["en-GB", "ja-JP"]) == .en)
         #expect(AppLanguage.preferred(in: ["fr-FR", "ja-JP"]) == .ja)
         #expect(AppLanguage.preferred(in: ["fr-FR"]) == .en)
@@ -58,7 +92,7 @@ struct CatalogTests {
         #expect(AppLanguage.ja.title == "日本語")
         #expect(AppLanguage.ja.localeIdentifier == "ja")
         #expect(AppLanguage.ja.speechLocale == "ja-JP")
-        #expect(AppLanguage.ja.text("Scan", "扫描", "スキャン") == "スキャン")
+        #expect(AppLanguage.ja.text("Scan", "扫描", "掃描", "スキャン") == "スキャン")
     }
 
     @Test func japaneseEntriesTypesStatsAndNarrationUseJapanese() throws {
