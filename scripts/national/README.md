@@ -16,10 +16,19 @@ that is needed on the app side (plus the digest assertions in `SelectedModelTest
 | `pokemon_labels_national.json` | 1025 labels `{id, name}` in National Dex order; becomes the app's `pokemon_labels.json` after export |
 | `acquire.py` | Downloads the pinned `JJMack/pokemon-classification-gen1-9` parquet shards (CC BY-NC-SA 4.0, Bulbapedia artwork) and TorchVision ImageNet weights into `artifacts/national/sources/` with SHA-256 checks |
 | `prepare.py` | Decodes the shards to `artifacts/national/data/images/<id>/`, dedupes exact bytes, and writes a grouped 85/15 train/val `manifest.jsonl` (normal/shiny pairs never straddle splits) |
+| `labels.py` | Label file loader shared by `prepare.py` (no torch needed) and `model.py` |
 | `model.py` | EfficientNet-B0 / MobileNetV3-L / EfficientNetV2-S heads sized from the label file, ImageNet normalization embedded |
 | `train.py` | CUDA training (bf16 autocast, AdamW, cosine schedule, label smoothing, class-balanced sampling, resume) and `predict` for per-species validation accuracy |
 | `export.py` | Mac-side Core ML export (FP32 + FP16) with trace-parity checks and the app label file |
 | `run.sh` | The whole GPU side in one command |
+
+## State of `artifacts/national/` (not in git)
+
+Prepared on the Mac on 2026-11-09: the three verified shards and three TorchVision weights sit under
+`sources/`, and `data/` already holds 17,914 decoded 256 px images with `manifest.jsonl`
+(15,169 train / 2,745 val, every species ≥ 5 images, manifest SHA-256
+`df4d69697962f48271d4b7180b310de68bbb5761541cff101822a8d9abd66f23`). Copy the whole `artifacts/national/`
+folder (~1.3 GB) next to the repository on the GPU box and `run.sh` skips acquire/prepare.
 
 ## Running on the GX10 (DGX Spark class, aarch64 + Blackwell)
 

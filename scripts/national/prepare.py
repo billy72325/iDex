@@ -24,7 +24,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 from PIL import Image
 
-from model import load_labels
+from labels import load_labels
 
 SOURCES = Path('artifacts/national/sources/JJMack--pokemon-classification-gen1-9')
 OUT = Path('artifacts/national/data')

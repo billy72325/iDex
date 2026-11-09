@@ -3,13 +3,12 @@
 Mirrors scripts/replacement/model.py so export/validation tooling stays interchangeable,
 but takes the class count from the label file instead of a constant.
 """
-import json
 from pathlib import Path
 import torch
 from torchvision import models
 
-HERE = Path(__file__).resolve().parent
-LABELS = HERE / 'pokemon_labels_national.json'
+from labels import LABELS, load_labels  # noqa: F401  (re-exported for train/export)
+
 SOURCE = Path('artifacts/national/sources')
 
 PRETRAINED = {
@@ -17,14 +16,6 @@ PRETRAINED = {
     'efficientnet_b0': ('efficientnet_b0_rwightman-7f5810bc.pth', 'https://download.pytorch.org/models/efficientnet_b0_rwightman-7f5810bc.pth'),
     'efficientnet_v2_s': ('efficientnet_v2_s-dd5fe13b.pth', 'https://download.pytorch.org/models/efficientnet_v2_s-dd5fe13b.pth'),
 }
-
-
-def load_labels(path=LABELS):
-    labels = json.loads(Path(path).read_text())
-    ids = [x['id'] for x in labels]
-    if ids != sorted(ids) or len(set(ids)) != len(ids):
-        raise ValueError('labels must be unique and sorted by National Dex id')
-    return labels
 
 
 class Classifier(torch.nn.Module):
