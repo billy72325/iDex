@@ -32,6 +32,8 @@ folder (~1.3 GB) next to the repository on the GPU box and `run.sh` skips acquir
 
 ## Running on the GX10 (DGX Spark class, aarch64 + Blackwell)
 
+繁體中文逐步說明見 [GX10.zh-TW.md](GX10.zh-TW.md)。
+
 Use NVIDIA's PyTorch container so the aarch64 CUDA wheels are already in place:
 
 ```sh
