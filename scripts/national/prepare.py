@@ -47,6 +47,18 @@ def decode(raw, size):
     return image.resize((size, size), Image.BILINEAR)
 
 
+def usable(path):
+    """True when the image exists and decodes; a file cut off by an interrupted run is re-made."""
+    if not path.exists():
+        return False
+    try:
+        with Image.open(path) as im:
+            im.verify()
+        return True
+    except Exception:
+        return False
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--size', type=int, default=256, help='stored edge; training crops to 224')
@@ -79,8 +91,10 @@ def main():
                     group = re.sub(r'-s(?=\.[a-z]+$)', '', filename) or digest[:16]
                     target = OUT / 'images' / f'{dex:04d}' / f'{digest[:16]}.png'
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    if not target.exists():
-                        decode(raw, a.size).save(target, optimize=True)
+                    if not usable(target):
+                        temp = target.with_suffix('.tmp.png')
+                        decode(raw, a.size).save(temp, optimize=True)
+                        temp.replace(target)
                     rows.append(dict(id=dex, path=str(target), source_split=file.stem, group=f'{dex}:{group}',
                                      shiny=str(item.get('shiny', '')).lower() in ('yes', 'true', '1'), sha256=digest))
                 except Exception as e:
