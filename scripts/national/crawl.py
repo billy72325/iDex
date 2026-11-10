@@ -57,14 +57,18 @@ def search_urls(query, limit):
     return out
 
 
-def bing_fallback(query, limit, folder, hashes, per_species, saved):
-    """When DuckDuckGo returns little, let icrawler download from Bing into a temp dir."""
+def engine_crawl(engine, query, limit, folder, hashes, per_species, saved):
+    """Let icrawler fetch from Bing or Google into a temp dir, then normalise and dedupe into `folder`."""
+    import shutil, tempfile
     try:
-        import shutil, tempfile
-        from icrawler.builtin import BingImageCrawler  # pip install icrawler
-        tmp = Path(tempfile.mkdtemp(prefix='bing-'))
-        crawler = BingImageCrawler(storage={'root_dir': str(tmp)}, log_level=40, feeder_threads=1, parser_threads=1, downloader_threads=4)
-        crawler.crawl(keyword=query, max_num=limit, filters=dict(type='photo'), min_size=(160, 160))
+        from icrawler.builtin import BingImageCrawler, GoogleImageCrawler  # pip install icrawler
+        cls = {'bing': BingImageCrawler, 'google': GoogleImageCrawler}[engine]
+        tmp = Path(tempfile.mkdtemp(prefix=f'{engine}-'))
+        crawler = cls(storage={'root_dir': str(tmp)}, log_level=40, feeder_threads=1, parser_threads=1, downloader_threads=4)
+        kwargs = dict(keyword=query, max_num=limit, min_size=(160, 160))
+        if engine == 'bing':
+            kwargs['filters'] = dict(type='photo')
+        crawler.crawl(**kwargs)
         for f in sorted(tmp.iterdir()):
             if saved >= per_species:
                 break
@@ -82,7 +86,7 @@ def bing_fallback(query, limit, folder, hashes, per_species, saved):
             saved += 1
         shutil.rmtree(tmp, ignore_errors=True)
     except Exception as e:
-        print(f'  bing failed for {query!r}: {e}', file=sys.stderr)
+        print(f'  {engine} failed for {query!r}: {e}', file=sys.stderr)
     return saved
 
 
@@ -119,32 +123,40 @@ def crawl_species(dex, en, ja, per_species, log):
     queries = [t.format(en=en) for t in QUERY_TEMPLATES_EN] + [t.format(ja=ja) for t in QUERY_TEMPLATES_JA]
     random.shuffle(queries)
     saved, tried = have, 0
+    # Bing first (most reliable scraper), then DuckDuckGo, then Google, until the quota is met.
     for q in queries:
         if saved >= per_species:
             break
-        urls = search_urls(q, max(12, per_species // 3))
-        for u in urls:
-            if saved >= per_species:
-                break
-            tried += 1
-            try:
-                data = fetch_image(u)
-            except Exception:
-                continue
-            if not data:
-                continue
-            digest = hashlib.sha256(data).hexdigest()
-            if digest in hashes:
-                continue
-            hashes.add(digest)
-            (folder / f'{digest[:16]}.jpg').write_bytes(data)
-            saved += 1
+        before = saved
+        saved = engine_crawl('bing', q, max(15, per_species // 3), folder, hashes, per_species, saved)
+        tried += saved - before
         time.sleep(random.uniform(0.6, 1.6))
-    if saved < per_species // 2:
-        for q in queries[:2]:
-            saved = bing_fallback(q, per_species, folder, hashes, per_species, saved)
+    if saved < per_species:
+        for q in queries:
             if saved >= per_species:
                 break
+            for u in search_urls(q, max(12, per_species // 3)):
+                if saved >= per_species:
+                    break
+                tried += 1
+                try:
+                    data = fetch_image(u)
+                except Exception:
+                    continue
+                if not data:
+                    continue
+                digest = hashlib.sha256(data).hexdigest()
+                if digest in hashes:
+                    continue
+                hashes.add(digest)
+                (folder / f'{digest[:16]}.jpg').write_bytes(data)
+                saved += 1
+            time.sleep(random.uniform(0.6, 1.6))
+    if saved < per_species // 2:
+        for q in queries[:3]:
+            if saved >= per_species:
+                break
+            saved = engine_crawl('google', q, per_species, folder, hashes, per_species, saved)
     row = dict(id=dex, name=en, queries=queries, tried=tried, images=saved)
     with log.open('a') as f:
         f.write(json.dumps(row, ensure_ascii=False) + '\n')
