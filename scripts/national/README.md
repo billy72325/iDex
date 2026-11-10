@@ -29,7 +29,7 @@ Prepared on the Mac on 2026-11-09: the three verified shards and three TorchVisi
 (15,169 train / 2,745 val, every species ≥ 5 images, manifest SHA-256
 `df4d69697962f48271d4b7180b310de68bbb5761541cff101822a8d9abd66f23`). The same folder is published as `national-artifacts.tar` (SHA-256
 `83dc18e40182b2c2b652cb0af3120fdee72450c930db8544f0a57fa081555653`) on the GitHub Release
-`training-data-v1`; extract it with `tar xf national-artifacts.tar -C artifacts/` next to the repository on the
+`raining-data-v1`; extract it with `tar xf national-artifacts.tar -C artifacts/` next to the repository on the
 GPU box and `run.sh` skips acquire/prepare.
 
 ## Running on the GX10 (DGX Spark class, aarch64 + Blackwell)
