@@ -59,7 +59,7 @@ SwiftUI, AVFoundation, Core ML, and system speech. Everything runs locally.
 
 ## License
 
-iDex's original app source code and supporting scripts use the [MIT License](LICENSE), copyright (c) 2026 Zihang Huang. See [NOTICE.md](NOTICE.md) for scope and exclusions.
+iDex is maintained by H.A. This fork's additions (Traditional Chinese, the full National Pokédex, the 1,025-class classifier and training pipeline, camera improvements) are copyright (c) 2026 H.A.; the original app source code is copyright (c) 2026 Zihang Huang. Both are under the [MIT License](LICENSE). See [NOTICE.md](NOTICE.md) for scope and exclusions.
 
 The packaged model is excluded; contributor trained-model rights are offered under CC BY-NC-SA 4.0 as described in the [model notice](iDex/Recognition/MODEL_NOTICE.md). Pokémon content and external training datasets are also excluded. See [asset credits](iDex/Catalog/ATTRIBUTION.md); bundled fonts retain the [Press Start 2P](iDex/Resources/Fonts/PressStart2P-OFL.txt) and [Fusion Pixel](iDex/Resources/Fonts/FusionPixel-OFL.txt) OFL licenses.
 

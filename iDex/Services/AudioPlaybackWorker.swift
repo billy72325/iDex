@@ -69,7 +69,7 @@ nonisolated final class SpeechPlaybackObserver: NSObject, AVSpeechSynthesizerDel
 /// actual hardware, so the first short cue doesn't depend on speech priming it.
 /// Native setup and speech calls stay off the UI and cooperative executors.
 nonisolated final class AudioPlaybackWorker: DeviceAudioPlayback, @unchecked Sendable {
-    private static let logger = Logger(subsystem: "zihanghuang.iDex", category: "audio")
+    private static let logger = Logger(subsystem: "billy.iDex", category: "audio")
     private let queue = DispatchQueue(label: "app.idex.audio", qos: .userInitiated)
     private let soundVolume: Float
     private let speechVolume: Float

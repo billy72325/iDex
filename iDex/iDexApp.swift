@@ -2,7 +2,7 @@
 //  iDexApp.swift
 //  iDex
 //
-//  Created by Zihang Huang on 2026/10/24.
+//  H.A.
 //
 
 import UIKit

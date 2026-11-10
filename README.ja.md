@@ -61,7 +61,7 @@ SwiftUI、AVFoundation、Core ML、システム音声。すべてローカルで
 
 ## ライセンス
 
-iDex 独自のアプリのソースコードと関連スクリプトには [MIT ライセンス](LICENSE)を適用します。著作権表示は Copyright (c) 2026 Zihang Huang です。適用範囲と除外対象は [NOTICE.md](NOTICE.md)をご覧ください。
+iDex は H.A. がメンテナンスしています。このフォークの追加部分（繁体字中国語、全国図鑑、1025 種分類モデルと学習パイプライン、カメラ改善）の著作権は (c) 2026 H.A.、オリジナルのアプリソースコードの著作権は (c) 2026 Zihang Huang に帰属し、いずれも [MIT ライセンス](LICENSE)です。適用範囲と除外対象は [NOTICE.md](NOTICE.md)をご覧ください。
 
 同梱モデルは MIT の対象外です。学習済みモデルへの貢献について貢献者が保有する権利は、[モデルに関する通知](iDex/Recognition/MODEL_NOTICE.md)に記載された範囲で CC BY-NC-SA 4.0 により提供されます。ポケモンのコンテンツと外部の学習データセットも MIT の対象外です。[素材のクレジット](iDex/Catalog/ATTRIBUTION.md)もご確認ください。同梱フォントには引き続き [Press Start 2P](iDex/Resources/Fonts/PressStart2P-OFL.txt) と [Fusion Pixel](iDex/Resources/Fonts/FusionPixel-OFL.txt) の OFL ライセンスを適用します。
 
