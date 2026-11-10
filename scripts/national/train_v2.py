@@ -262,15 +262,22 @@ def train(args):
     labels = load_labels()
     index = {x['id']: i for i, x in enumerate(labels)}
     manifest = V2 / 'manifest.jsonl'
-    manifest_sha = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    digest = hashlib.sha256(manifest.read_bytes())
     tr, va = rows_from(manifest, 'train'), rows_from(manifest, 'val')
+    for extra in args.extra_manifest:
+        digest.update(extra.read_bytes())
+        tr += rows_from(extra, 'train'); va += rows_from(extra, 'val')
+        print(f'extra manifest {extra}: +{len(rows_from(extra, "train"))} train, +{len(rows_from(extra, "val"))} val', flush=True)
+    manifest_sha = digest.hexdigest()
     counts = defaultdict(int)
     for r in tr:
         counts[(r['id'], r['kind'])] += 1
-    print(f'train {len(tr)} (art {sum(r["kind"]=="art" for r in tr)}, photo {sum(r["kind"]=="photo" for r in tr)}, neg {sum(r["kind"]=="neg" for r in tr)}) '
+    print(f'train {len(tr)} (art {sum(r["kind"]=="art" for r in tr)}, photo {sum(r["kind"]=="photo" for r in tr)}, '
+          f'crawl {sum(r["kind"]=="crawl" for r in tr)}, own {sum(r["kind"]=="own" for r in tr)}, neg {sum(r["kind"]=="neg" for r in tr)}) '
           f'val {len(va)} classes {len(labels)}', flush=True)
     # Balanced sampling: per (species, kind) inverse-sqrt frequency; negatives weighted to ~4 % of batches.
-    pos_weight = {i: 1.0 / math.sqrt(counts[(r['id'], r['kind'])]) * (1.6 if r['kind'] == 'photo' else 1.0)
+    kind_boost = {'photo': 1.6, 'crawl': 1.3, 'own': 2.5, 'art': 1.0}
+    pos_weight = {i: 1.0 / math.sqrt(counts[(r['id'], r['kind'])]) * kind_boost.get(r['kind'], 1.0)
                   for i, r in enumerate(tr) if r['kind'] != 'neg'}
     neg_total = sum(r['kind'] == 'neg' for r in tr)
     neg_share = 0.05  # negatives make up ~5 % of sampled batches
@@ -282,12 +289,20 @@ def train(args):
                               pin_memory=True, drop_last=True, persistent_workers=args.workers > 0, collate_fn=collate, prefetch_factor=4)
     val_loader = DataLoader(EvalWrap(V2Dataset(va, index, args.size, False)), batch_size=args.batch * 2, shuffle=False, num_workers=args.workers,
                             pin_memory=True, collate_fn=collate_eval)
-    model = make_model(args.arch, len(labels), pretrained=True).to(device).to(memory_format=torch.channels_last)
+    model = make_model(args.arch, len(labels), pretrained=True)
+    if args.init_checkpoint:
+        init = torch.load(args.init_checkpoint, map_location='cpu', weights_only=True)
+        if init['labels'] != labels or init['config']['arch'] != args.arch:
+            raise ValueError('init checkpoint labels/arch mismatch')
+        model.load_state_dict(init['model'], strict=True)
+        print(f'initialised from {args.init_checkpoint}', flush=True)
+    model = model.to(device).to(memory_format=torch.channels_last)
     ema = copy.deepcopy(model).eval()
     for p_ in ema.parameters():
         p_.requires_grad_(False)
     config = dict(arch=args.arch, size=args.size, classes=len(labels), epochs=args.epochs, lr=args.lr, batch=args.batch, seed=args.seed,
-                  recipe='v2-composite-photo-oe', oe_weight=args.oe_weight, ema_decay=args.ema_decay)
+                  recipe='v2-composite-photo-oe', oe_weight=args.oe_weight, ema_decay=args.ema_decay,
+                  extra_manifests=[str(x) for x in args.extra_manifest], init_checkpoint=str(args.init_checkpoint) if args.init_checkpoint else None)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / 'environment.json').write_text(json.dumps(dict(
         python=os.sys.version, torch=torch.__version__, torchvision=torchvision.__version__, cuda=torch.version.cuda,
@@ -332,8 +347,10 @@ def train(args):
         scores, (vl, vt) = evaluate(ema, val_loader, device)
         art = scores.get('art', {}).get('top1') or 0.0
         photo = scores.get('photo', {}).get('top1')
-        # Selection score weights the photo split heavily: that is what the camera sees.
-        score = 0.4 * art + 0.6 * photo if photo is not None else art
+        own = scores.get('own', {}).get('top1')
+        # Selection score favours what the camera sees: own photos, then web photos, then artwork.
+        parts = [(0.3, art)] + ([(0.4, photo)] if photo is not None else []) + ([(0.6, own)] if own is not None else [])
+        score = sum(w * v for w, v in parts) / sum(w for w, _ in parts)
         row = dict(epoch=epoch + 1, train_loss=loss_sum / max(seen, 1), val=scores, score=score, seconds=time.time() - tick,
                    elapsed_seconds=time.time() - began, lr=scheduler.get_last_lr()[0])
         with (args.out / 'history.jsonl').open('a') as f:
@@ -360,6 +377,8 @@ def predict(args):
     device = torch.device('cuda')
     labels = load_labels(); index = {x['id']: i for i, x in enumerate(labels)}
     rows = rows_from(V2 / 'manifest.jsonl', args.split)
+    for extra in args.extra_manifest:
+        rows += rows_from(extra, args.split)
     state = torch.load(args.checkpoint, map_location='cpu', weights_only=True)
     if state['labels'] != labels:
         raise ValueError('checkpoint labels mismatch')
@@ -413,6 +432,8 @@ def main():
     p.add_argument('--seed', type=int, default=20261110)
     p.add_argument('--max-minutes', type=float, default=0)
     p.add_argument('--resume', action='store_true')
+    p.add_argument('--extra-manifest', type=Path, action='append', default=[], help='additional manifest(s) from filter_crawl.py')
+    p.add_argument('--init-checkpoint', type=Path, help='warm-start weights (same arch and labels)')
     args = p.parse_args()
     if not torch.cuda.is_available():
         raise SystemExit('CUDA GPU required')

@@ -102,3 +102,21 @@ cat artifacts/national/predictions/v2-efficientnet_v2_s-224-val.summary.json
 
 Read `by_kind.photo.top1` (the camera proxy), `by_kind.art.top1`, and `negatives_max_prob.p95` (set the app's
 confidence threshold a little above it). Export with `export.py` exactly as for v1.
+
+## Crawl + v3 (`run_overnight.sh`)
+
+`crawl.py` searches DuckDuckGo (Bing via icrawler as fallback) for merchandise photos of every species —
+figures, plush, cards, in English and Japanese — and keeps up to `--per-species` (default 60) per species under
+`artifacts/national/crawl/`. Personal research use only; nothing crawled is redistributed. `filter_crawl.py`
+dedupes (SHA-256 + perceptual hash) and lets a trained model veto mislabelled results (keep when the label is in
+the model's top-5 or above 3 % probability; images are only ever dropped, never relabelled). Photos you take
+yourself go in `artifacts/national/own/<id>/` and are trusted as-is, with 20 % held out as an `own` validation
+split that drives model selection.
+
+```sh
+bash scripts/national/run_overnight.sh            # crawl → v2 → vet → v3, sequentially
+```
+
+Steps: crawl all species → train v2 → `filter_crawl.py` with v2 → train v3 (`--init-checkpoint` from v2,
+`--extra-manifest` with the vetted crawl and own photos, lower LR) → evaluate. Read both summaries and bring back
+the better `best.pt`.
