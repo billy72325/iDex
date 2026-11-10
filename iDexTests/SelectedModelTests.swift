@@ -15,7 +15,7 @@ struct SelectedModelTests {
         #endif
         let model = try MLModel(contentsOf: url, configuration: configuration)
         let image = try #require(model.modelDescription.inputDescriptionsByName["image"]?.imageConstraint)
-        #expect(image.pixelsWide == 224 && image.pixelsHigh == 224)
+        #expect(image.pixelsWide == image.pixelsHigh && [224, 256].contains(image.pixelsWide))
         let logits = try #require(model.modelDescription.outputDescriptionsByName["logits"]?.multiArrayConstraint)
         #expect(logits.shape.map(\.intValue) == [1, 1025])
         #expect(logits.dataType == .float32)

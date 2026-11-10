@@ -37,6 +37,8 @@ enum RecognitionError: LocalizedError {
 actor PokemonClassifier {
     private var model: MLModel?
     private var labels: [Label] = []
+    /// Side of the model's square image input, read from the compiled model (224 or 256).
+    private var inputSide = 224
 
     private struct Label: Decodable {
         let id: Int
@@ -48,8 +50,8 @@ actor PokemonClassifier {
         guard let model else { throw RecognitionError.missingModel }
         let imageValue = try MLFeatureValue(
             cgImage: image,
-            pixelsWide: 224,
-            pixelsHigh: 224,
+            pixelsWide: inputSide,
+            pixelsHigh: inputSide,
             pixelFormatType: kCVPixelFormatType_32BGRA,
             options: [.cropAndScale: VNImageCropAndScaleOption.scaleFill.rawValue]
         )
@@ -102,6 +104,9 @@ actor PokemonClassifier {
         configuration.computeUnits = .all
         #endif
         model = try MLModel(contentsOf: url, configuration: configuration)
+        if let constraint = model?.modelDescription.inputDescriptionsByName["image"]?.imageConstraint {
+            inputSide = constraint.pixelsWide
+        }
         labels = loadedLabels
     }
 }

@@ -76,3 +76,29 @@ python scripts/national/export.py --checkpoint artifacts/national/runs/efficient
 Training images come from a dataset published under CC BY-NC-SA 4.0 and attributed to Bulbapedia; the
 resulting weights inherit the non-commercial, share-alike conditions. Keep `iDex/Recognition/MODEL_NOTICE.md`
 in step when the bundled model changes. Nothing under `artifacts/` is committed.
+
+## v2: camera-robust recipe (`run_v2.sh`)
+
+The v1 model only ever saw clean white-background artwork, so real photos of toys, cards and screens fell
+apart. `run_v2.sh` adds what the original 151-class campaign had, scaled to 1,025 classes:
+
+- **Compositing**: RGBA artwork (alpha kept from the parquet, white-keyed otherwise) is cropped to the figure
+  and pasted onto COCO photo crops or synthetic gradients at random scale/position/rotation/perspective, with
+  per-figure lighting, soft edges, blur, motion blur, sensor noise, JPEG, scan-line and grayscale jitter.
+- **Real photos**: the `keremberke` and `sgtsaughter` Gen I web-photo sets (fetched by
+  `scripts/replacement/acquire.py`) train alongside the artwork and get their own `photo` validation split,
+  which is weighted 60 % in model selection because it is the closest thing to the camera.
+- **Negatives / outlier exposure**: COCO images are pushed toward a uniform output (`--oe-weight 0.5`), so the
+  top softmax on non-Pokémon input drops and the app's abstention threshold means something.
+- No label smoothing, EMA weights (`--ema-decay 0.9995`), and a temperature fitted on validation stored in
+  `config.temperature` (informational; the app keeps T = 1).
+- Default `efficientnet_v2_s` at 224 px for 40 epochs; `PokemonClassifier` now reads the model's input size,
+  so 256 px (`bash scripts/national/run_v2.sh efficientnet_v2_s 40 256`) also drops in.
+
+```sh
+bash scripts/national/run_v2.sh                      # efficientnet_v2_s, 40 epochs, 224 px
+cat artifacts/national/predictions/v2-efficientnet_v2_s-224-val.summary.json
+```
+
+Read `by_kind.photo.top1` (the camera proxy), `by_kind.art.top1`, and `negatives_max_prob.p95` (set the app's
+confidence threshold a little above it). Export with `export.py` exactly as for v1.
