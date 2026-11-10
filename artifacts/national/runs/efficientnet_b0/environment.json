@@ -1,0 +1,19 @@
+{
+  "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+  "torch": "2.9.0a0+145a3a7bda.nv25.10",
+  "torchvision": "0.24.0a0+094e7af5",
+  "cuda": "13.0",
+  "gpu": "NVIDIA GB10",
+  "parameters": 5320573,
+  "config": {
+    "arch": "efficientnet_b0",
+    "size": 224,
+    "classes": 1025,
+    "epochs": 20,
+    "lr": 0.001,
+    "batch": 128,
+    "label_smoothing": 0.1,
+    "seed": 20261109
+  },
+  "manifest_sha256": "df4d69697962f48271d4b7180b310de68bbb5761541cff101822a8d9abd66f23"
+}
