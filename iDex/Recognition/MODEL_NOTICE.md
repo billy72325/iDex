@@ -1,6 +1,6 @@
 # Model and training-data notices
 
-The packaged151-class EfficientNet-B0 was fine-tuned locally for iDex. Its architecture and ImageNet initialization use TorchVision; the training images were not all created by iDex contributors. This notice applies to the model distribution and does not relicense the entire application, its fonts, audio, catalog or sprites.
+The packaged 1,025-class EfficientNet-B0 was fine-tuned locally for iDex on the [JJMack/pokemon-classification-gen1-9](https://huggingface.co/datasets/JJMack/pokemon-classification-gen1-9/tree/959ff557b102fc3b4f912d0ca769273be5b9ca7f) dataset (CC BY-NC-SA 4.0, Bulbapedia artwork) via `scripts/national/`; the notices below also cover the earlier 151-class Kanto model. Its architecture and ImageNet initialization use TorchVision; the training images were not all created by iDex contributors. This notice applies to the model distribution and does not relicense the entire application, its fonts, audio, catalog or sprites.
 
 ## Model contributions
 

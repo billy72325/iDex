@@ -1,4 +1,5 @@
 {
+  "note": "Record of the superseded 151-class Kanto model. The bundled model is now the 1,025-class national classifier documented in iDex/Recognition/MODEL.md and scripts/national/.",
   "source_checkpoint_sha256": "b24cf5301ad97bd1f1f721bffa3c40ec0242bf1efac68435a3752850f624fa6f",
   "graph_sha256": "71f9a424c355484cc6df79e197e912547b2b3d2f63c39d3d5d01b6bb43e3939d",
   "weights_sha256": "732f3b550cb44c7927d0914086df7b1237371a7d9a902942fd03ab5274d92756",

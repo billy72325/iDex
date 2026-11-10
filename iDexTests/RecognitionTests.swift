@@ -164,7 +164,7 @@ struct RecognitionTests {
         #expect(store.entryStatusTitle == "最可能匹配")
     }
 
-    @Test("Model labels map onto the bundled catalog and the selected Kanto model")
+    @Test("Model labels map onto the bundled catalog and the selected National model")
     func labelCoverageMatchesCatalog() throws {
         struct Label: Decodable {
             let id: Int
@@ -173,13 +173,14 @@ struct RecognitionTests {
         let url = try #require(Bundle.main.url(forResource: "pokemon_labels", withExtension: "json"))
         let labels = try JSONDecoder().decode([Label].self, from: Data(contentsOf: url))
 
-        #expect(labels.count == 151)
+        #expect(labels.count == 1025)
         #expect(Set(labels.map(\.id)).isSubset(of: Set(PokemonCatalog.shared.entries.map(\.id))))
         #expect(Set(labels.map(\.id)) == PokemonCatalog.recognizableIDs)
         #expect(labels.enumerated().allSatisfy { $0.element.id == $0.offset + 1 })
         #expect(labels.allSatisfy { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
         #expect(labels[24].name == "pikachu")
         #expect(labels[5].name == "charizard")
+        #expect(labels[1024].name == "pecharunt")
     }
 
     // Match the app's sample path: a 96px transparent sprite becomes an opaque

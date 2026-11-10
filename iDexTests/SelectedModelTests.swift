@@ -17,10 +17,10 @@ struct SelectedModelTests {
         let image = try #require(model.modelDescription.inputDescriptionsByName["image"]?.imageConstraint)
         #expect(image.pixelsWide == 224 && image.pixelsHigh == 224)
         let logits = try #require(model.modelDescription.outputDescriptionsByName["logits"]?.multiArrayConstraint)
-        #expect(logits.shape.map(\.intValue) == [1, 151])
+        #expect(logits.shape.map(\.intValue) == [1, 1025])
         #expect(logits.dataType == .float32)
         let metadata = try #require(model.modelDescription.metadata[.creatorDefinedKey] as? [String: String])
-        #expect(metadata["checkpoint_sha256"] == "b24cf5301ad97bd1f1f721bffa3c40ec0242bf1efac68435a3752850f624fa6f")
-        #expect(metadata["app_labels_sha256"] == "13bd2345fa10f8a7d04363772bb6ef7871c0a6c0635d8c907a77e6cb93f78725")
+        #expect(metadata["checkpoint_sha256"] == "4fec57909ae275c7e0ffa9a8a65c68a1621863dcfc62bcae6d92ca3d81bade0f")
+        #expect(metadata["app_labels_sha256"] == "3b794189d9468b353b7508208446d7be428c3841f04d8d47b2a65f898e0d17dc")
     }
 }

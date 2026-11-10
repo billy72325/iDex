@@ -1,6 +1,6 @@
 # Offline catalog and visual assets
 
-The app bundles all 1,025 National Pokédex species (Generations I–IX); the recognition model covers the original 151 Kanto species. Names, genera, English, Simplified Chinese, Traditional Chinese, and Japanese Pokédex text, types, height, weight, and base stats were fetched from the PokeAPI data repository on 24 October 2026:
+The app bundles all 1,025 National Pokédex species (Generations I–IX); the recognition model covers all 1,025 species. Names, genera, English, Simplified Chinese, Traditional Chinese, and Japanese Pokédex text, types, height, weight, and base stats were fetched from the PokeAPI data repository on 24 October 2026:
 
 - https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv
 - API/data documentation: https://pokeapi.co/docs/v2
@@ -13,7 +13,7 @@ Sprites were downloaded from the Pokémon Database's Black & White sprite archiv
 - https://img.pokemondb.net/sprites/black-white/normal/pikachu.png
 - Fallback source: https://github.com/PokeAPI/sprites (species #152–#1025 use the PokéAPI default front sprites; #1–#151 keep the Pokémon Database Black/White sprites)
 
-Cries for all 151 species come from [PokéAPI/cries](https://github.com/PokeAPI/cries) at commit `b3a9044bb839b5e3152aaa536c7b463a0fcf0140`, using `cries/pokemon/latest/{id}.ogg`. The upstream repository credits Pokémon Showdown, Veekun, and The Sounds Resource. `Resources/Cries/cry-sources.json` records each source URL, source and output SHA-256 hashes, species ID, and PCM frame count. The files are converted to mono 22,050 Hz, 16-bit PCM WAV without trimming or normalizing. Some upstream `.ogg` paths contain MP3 audio; conversion detects the actual format. Run `python3 scripts/audio/build_cries.py` with `ffmpeg` installed to regenerate them. The compiled app needs no decoder package or network access.
+Cries for all 1,025 species come from [PokéAPI/cries](https://github.com/PokeAPI/cries) at commit `b3a9044bb839b5e3152aaa536c7b463a0fcf0140`, using `cries/pokemon/latest/{id}.ogg`. The upstream repository credits Pokémon Showdown, Veekun, and The Sounds Resource. `Resources/Cries/cry-sources.json` records each source URL, source and output SHA-256 hashes, species ID, and PCM frame count. The files are converted to mono 22,050 Hz, 16-bit PCM WAV without trimming or normalizing. Some upstream `.ogg` paths contain MP3 audio; conversion detects the actual format. Run `python3 scripts/audio/build_cries.py` with `ffmpeg` installed to regenerate them. The compiled app needs no decoder package or network access.
 
 The upstream license is preserved in `Resources/Cries/PokeAPI-Cries-LICENSE.txt`. It states that audio contents are copyright The Pokémon Company and that the repository is distributed under CC0 1.0; this does not transfer the underlying Pokémon audio rights.
 

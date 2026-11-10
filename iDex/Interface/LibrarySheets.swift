@@ -82,7 +82,7 @@ struct SettingsSheet: View {
                     Label(store.text("Point at a Pokémon, then identify.", "将取景器对准宝可梦，轻点识别。", "將取景器對準寶可夢，點一下辨識。", "ポケモンにカメラを向けて、スキャンします。"), systemImage: "viewfinder")
                     Label(store.text("Unfold to reveal the research panel.", "展开屏幕，查看内部研究面板。", "展開螢幕，查看內部研究面板。", "画面を開くと、リサーチパネルが表示されます。"), systemImage: "book")
                     Label(store.text("Photos and recognition stay on your iPhone.", "照片与识别过程均留在你的 iPhone 上。", "照片與辨識過程都留在你的 iPhone 上。", "写真と識別処理は、すべて iPhone 内で完結します。"), systemImage: "lock.shield")
-                    Text(store.text("The bundled model recognizes the original 151 Kanto Pokémon. Uncertain scans ask you to try again. Samples use the same model as your camera.", "内置模型可识别最初的151种关都宝可梦。匹配不确定时会提示重试。样本与相机使用相同的识别模型。", "內建模型可辨識最初的151種關都寶可夢。結果不確定時會提示重試。樣本與相機使用相同的辨識模型。", "内蔵モデルは、カントー地方の最初の151種のポケモンを識別します。結果が不確かな場合は、再スキャンをお試しください。サンプルとカメラは同じ識別モデルを使います。"))
+                    Text(store.text("The bundled model recognizes all 1,025 Pokémon through Generation IX. Uncertain scans ask you to try again. Samples use the same model as your camera.", "内置模型可识别第一至第九世代全部1025种宝可梦。匹配不确定时会提示重试。样本与相机使用相同的识别模型。", "內建模型可辨識第一至第九世代全部1025種寶可夢。結果不確定時會提示重試。樣本與相機使用相同的辨識模型。", "内蔵モデルは、第1〜第9世代の全1025種のポケモンを識別します。結果が不確かな場合は、再スキャンをお試しください。サンプルとカメラは同じ識別モデルを使います。"))
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section(store.text("Credits", "制作信息", "製作資訊", "クレジット")) {
