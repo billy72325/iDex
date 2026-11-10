@@ -76,7 +76,7 @@ def main():
     p.add_argument('--seed', type=int, default=20261111)
     a = p.parse_args()
     labels = load_labels(); index = {x['id']: i for i, x in enumerate(labels)}
-    rows = collect(a.crawl, 'crawl') + collect(a.own, 'own')
+    rows = collect(a.own, 'own') + collect(a.crawl, 'crawl')  # own first: they win the dedupe
     if not rows:
         raise SystemExit('nothing under --crawl or --own')
     # exact + perceptual dedupe (crawl results repeat the same product shot endlessly)
