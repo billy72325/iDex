@@ -21,7 +21,7 @@ mkdir -p artifacts/national/logs
 "$PY" -m pip install -q pyarrow pillow numpy ddgs icrawler 2>&1 | tail -1 || true
 
 echo "== 1/4 crawl (log: artifacts/national/logs/crawl.log)"
-"$PY" scripts/national/crawl.py --per-species "$PER_SPECIES" --workers 6 2>&1 | tee artifacts/national/logs/crawl.log | grep -E "^#|species|images" | tail -5
+"$PY" scripts/national/crawl.py --per-species "$PER_SPECIES" --workers 6 2>&1 | tee artifacts/national/logs/crawl.log
 
 echo "== 2/4 v2 training"
 bash scripts/national/run_v2.sh "$ARCH" "$V2_EPOCHS" "$SIZE" 2>&1 | tee artifacts/national/logs/v2.log
