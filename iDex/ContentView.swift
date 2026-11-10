@@ -185,6 +185,18 @@ private struct ScannerPanel: View {
                         .accessibilityIdentifier("scan-capture")
                 } else if !store.useSample && store.camera.status == .ready {
                     CameraPreview(controller: store.camera)
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            pixel(String(format: "%.1f×", store.camera.displayZoom), 7)
+                                .foregroundStyle(.white.opacity(0.85))
+                                .padding(.horizontal, 6).padding(.vertical, 3)
+                                .background(Color.black.opacity(0.35), in: Capsule())
+                                .padding(8)
+                                .accessibilityIdentifier("camera-zoom")
+                        }
+                    }.allowsHitTesting(false)
                 } else if store.useSample {
                     targetGrid
                     if let sample = store.sample {

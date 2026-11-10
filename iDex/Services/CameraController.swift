@@ -30,6 +30,8 @@ final class CameraController {
     private(set) var status: CameraStatus = .idle
     private(set) var error: CameraError?
     private(set) var device: AVCaptureDevice?
+    /// Zoom relative to the 1× wide lens, for the viewfinder readout.
+    private(set) var displayZoom: CGFloat = 1
     @ObservationIgnored private let worker = CameraSessionWorker()
     @ObservationIgnored private var startTask: Task<Void, Never>?
     @ObservationIgnored private var wantsCamera = false
@@ -101,6 +103,20 @@ final class CameraController {
         captureRotation = angle
     }
 
+    /// Pinch gesture: `scale` multiplies the zoom that was active when the pinch began.
+    fileprivate func zoom(to relative: CGFloat) {
+        worker.setZoom(relative: relative) { [weak self] applied in
+            Task { @MainActor [weak self] in self?.displayZoom = applied }
+        }
+    }
+
+    fileprivate var currentZoom: CGFloat { displayZoom }
+
+    /// Tap in the preview: `point` is already in capture-device coordinates (0…1).
+    fileprivate func focus(at point: CGPoint) {
+        worker.focus(at: point)
+    }
+
     fileprivate func connectPreview(_ layer: AVCaptureVideoPreviewLayer, completion: @escaping @MainActor @Sendable () -> Void) {
         worker.connectPreview(layer, completion: completion)
     }
@@ -127,6 +143,8 @@ nonisolated private final class CameraSessionWorker: NSObject, AVCaptureVideoDat
     private let imageContext = CIContext(options: [.cacheIntermediates: false])
     private var configured = false
     private var device: AVCaptureDevice?
+    /// Video zoom factor of the 1× wide lens on the chosen (possibly virtual) device.
+    private var wideZoomFactor: CGFloat = 1
     private var pendingStart: CheckedContinuation<AVCaptureDevice, Error>?
 
     func start() async throws -> AVCaptureDevice {
@@ -147,8 +165,13 @@ nonisolated private final class CameraSessionWorker: NSObject, AVCaptureVideoDat
     }
 
     private func configure() throws {
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
-                ?? AVCaptureDevice.default(for: .video) else { throw CameraError.noCamera }
+        // Prefer the multi-lens virtual device: it switches to the ultra-wide
+        // lens for close-ups (macro) and back on its own, and exposes the full
+        // optical zoom range through a single videoZoomFactor.
+        let discovery = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera],
+            mediaType: .video, position: .back)
+        guard let device = discovery.devices.first ?? AVCaptureDevice.default(for: .video) else { throw CameraError.noCamera }
         let input = try AVCaptureDeviceInput(device: device)
         session.beginConfiguration()
         defer { session.commitConfiguration() }
@@ -157,6 +180,7 @@ nonisolated private final class CameraSessionWorker: NSObject, AVCaptureVideoDat
             throw CameraError.configurationFailed
         }
         session.addInput(input)
+        configureFocusAndZoom(device)
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.setSampleBufferDelegate(self, queue: frameQueue)
         session.addOutput(videoOutput)
@@ -175,6 +199,61 @@ nonisolated private final class CameraSessionWorker: NSObject, AVCaptureVideoDat
         }
         self.device = device
         configured = true
+    }
+
+    /// Start at the 1× wide lens, continuous focus/exposure that re-triggers when
+    /// the subject changes, and no near/far focus restriction so both close toys
+    /// and distant screens lock quickly.
+    private func configureFocusAndZoom(_ device: AVCaptureDevice) {
+        wideZoomFactor = device.virtualDeviceSwitchOverVideoZoomFactors.first.map { CGFloat(truncating: $0) } ?? 1
+        do {
+            try device.lockForConfiguration()
+            defer { device.unlockForConfiguration() }
+            device.videoZoomFactor = min(max(wideZoomFactor, device.minAvailableVideoZoomFactor), device.maxAvailableVideoZoomFactor)
+            if device.isFocusModeSupported(.continuousAutoFocus) { device.focusMode = .continuousAutoFocus }
+            if device.isExposureModeSupported(.continuousAutoExposure) { device.exposureMode = .continuousAutoExposure }
+            if device.isAutoFocusRangeRestrictionSupported { device.autoFocusRangeRestriction = .none }
+            if device.isSmoothAutoFocusSupported { device.isSmoothAutoFocusEnabled = false }
+            device.isSubjectAreaChangeMonitoringEnabled = true
+        } catch {
+            // Defaults still work; zoom and focus simply stay at the system values.
+        }
+    }
+
+    /// `relative` is the zoom shown to the user (1 = wide lens). Clamped to the
+    /// device range, allowing the ultra-wide (below 1) and up to 8× digital.
+    func setZoom(relative: CGFloat, applied: @escaping @Sendable (CGFloat) -> Void) {
+        queue.async {
+            guard let device = self.device else { return }
+            let lower = device.minAvailableVideoZoomFactor
+            let upper = min(device.maxAvailableVideoZoomFactor, self.wideZoomFactor * 8)
+            let factor = min(max(relative * self.wideZoomFactor, lower), upper)
+            do {
+                try device.lockForConfiguration()
+                device.videoZoomFactor = factor
+                device.unlockForConfiguration()
+            } catch { return }
+            applied(factor / self.wideZoomFactor)
+        }
+    }
+
+    func focus(at point: CGPoint) {
+        queue.async {
+            guard let device = self.device else { return }
+            do {
+                try device.lockForConfiguration()
+                defer { device.unlockForConfiguration() }
+                if device.isFocusPointOfInterestSupported, device.isFocusModeSupported(.continuousAutoFocus) {
+                    device.focusPointOfInterest = point
+                    device.focusMode = .continuousAutoFocus
+                }
+                if device.isExposurePointOfInterestSupported, device.isExposureModeSupported(.continuousAutoExposure) {
+                    device.exposurePointOfInterest = point
+                    device.exposureMode = .continuousAutoExposure
+                }
+                device.isSubjectAreaChangeMonitoringEnabled = true
+            } catch {}
+        }
     }
 
     func stop() {
@@ -318,12 +397,31 @@ struct CameraPreview: UIViewRepresentable {
     private var previewRotationObservation: NSKeyValueObservation?
     private var captureRotationObservation: NSKeyValueObservation?
 
+    private var pinchStartZoom: CGFloat = 1
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         previewLayer.videoGravity = .resizeAspectFill
         backgroundColor = .black
         isAccessibilityElement = true
         accessibilityIdentifier = "camera.preview"
+        addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:))))
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleTap(_:))))
+    }
+
+    @objc private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        guard let controller else { return }
+        switch gesture.state {
+        case .began: pinchStartZoom = controller.currentZoom
+        case .changed: controller.zoom(to: pinchStartZoom * gesture.scale)
+        default: break
+        }
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard let controller else { return }
+        let point = previewLayer.captureDevicePointConverted(fromLayerPoint: gesture.location(in: self))
+        controller.focus(at: point)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
