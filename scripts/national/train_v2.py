@@ -121,13 +121,15 @@ def photo_like(im):
     """Degradations shared by composited artwork and real photos."""
     if random.random() < 0.35:
         im = im.filter(ImageFilter.GaussianBlur(random.uniform(0.3, 2.2)))
-    if random.random() < 0.25:  # motion blur
-        k = random.choice([3, 5, 7]); kernel = [0.0] * (k * k)
-        if random.random() < 0.5:
-            for i in range(k): kernel[(k // 2) * k + i] = 1.0 / k
-        else:
-            for i in range(k): kernel[i * k + k // 2] = 1.0 / k
-        im = im.filter(ImageFilter.Kernel((k, k), kernel, scale=1))
+    if random.random() < 0.25:  # motion blur (Pillow's Kernel only takes 3x3/5x5, so average along an axis by hand)
+        k = random.choice([3, 5, 7, 9]); axis = random.choice([0, 1])
+        arr = np.asarray(im).astype(np.float32)
+        pad = [(0, 0)] * 3; pad[axis] = (k // 2, k // 2)
+        padded = np.pad(arr, pad, mode='edge')
+        out = np.zeros_like(arr)
+        for i in range(k):
+            out += np.take(padded, range(i, i + arr.shape[axis]), axis=axis)
+        im = Image.fromarray(np.clip(out / k, 0, 255).astype(np.uint8))
     if random.random() < 0.3:  # sensor noise
         arr = np.asarray(im).astype(np.float32)
         arr += np.random.normal(0, random.uniform(2, 10), arr.shape)

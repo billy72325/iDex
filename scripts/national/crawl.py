@@ -62,6 +62,7 @@ def engine_crawl(engine, query, limit, folder, hashes, per_species, saved):
     import shutil, tempfile
     try:
         from icrawler.builtin import BingImageCrawler, GoogleImageCrawler  # pip install icrawler
+        import logging; logging.getLogger('icrawler').setLevel(logging.CRITICAL)
         cls = {'bing': BingImageCrawler, 'google': GoogleImageCrawler}[engine]
         tmp = Path(tempfile.mkdtemp(prefix=f'{engine}-'))
         crawler = cls(storage={'root_dir': str(tmp)}, log_level=40, feeder_threads=1, parser_threads=1, downloader_threads=4)
