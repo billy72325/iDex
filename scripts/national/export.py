@@ -33,6 +33,15 @@ def main():
     a.out.mkdir(parents=True)
     model, state = load_checkpoint(a.checkpoint)
     model.eval()
+    temperature = float(state['config'].get('temperature', 1.0))
+    if abs(temperature - 1.0) > 1e-3:
+        # Bake the calibration temperature into the graph: the app's softmax(logits) is then calibrated.
+        class Scaled(torch.nn.Module):
+            def __init__(self, net, t):
+                super().__init__(); self.net = net; self.t = t
+            def forward(self, x):
+                return self.net(x) / self.t
+        model = Scaled(model, temperature).eval()
     size = state['config']['size']
     torch.manual_seed(20261109)
     example = torch.rand(1, 3, size, size)
@@ -57,12 +66,13 @@ def main():
         converted.license = 'Research candidate: source dataset (CC BY-NC-SA 4.0) and Pokémon rights caveats apply'
         converted.user_defined_metadata['checkpoint_sha256'] = hashlib.sha256(a.checkpoint.read_bytes()).hexdigest()
         converted.user_defined_metadata['manifest_sha256'] = state['manifest_sha256']
+        converted.user_defined_metadata['baked_temperature'] = f'{temperature:.6f}'
         converted.user_defined_metadata['app_labels_sha256'] = hashlib.sha256(labels_json.encode()).hexdigest()
         path = a.out / f'NationalClassifier-{name}.mlpackage'
         converted.save(str(path))
         results.append(dict(precision=name, path=str(path)))
     receipt = dict(platform=platform.platform(), torch=torch.__version__, coremltools=ct.__version__, deployment=a.deployment,
-                   size=size, classes=len(state['labels']), trace_max_errors=drift, models=results,
+                   size=size, classes=len(state['labels']), baked_temperature=temperature, trace_max_errors=drift, models=results,
                    next_steps=['run scripts/replacement/apple validation on device',
                                'copy the chosen .mlpackage to iDex/Recognition/KantoClassifier.mlpackage (keep the file name the app loads)',
                                'copy pokemon_labels.json to iDex/Recognition/pokemon_labels.json',

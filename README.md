@@ -65,7 +65,7 @@ The packaged model is excluded; contributor trained-model rights are offered und
 
 ## Thanks, humans
 
-Sprites: [Pokémon Database](https://pokemondb.net/sprites). Data and cries: [PokéAPI](https://github.com/PokeAPI/pokeapi). Model: locally trained EfficientNet-B0 (FP32), built with [TorchVision](https://docs.pytorch.org/vision/stable/models/efficientnet.html). Fonts: Press Start 2P and Fusion Pixel (SIL OFL 1.1).
+Sprites: [Pokémon Database](https://pokemondb.net/sprites). Data and cries: [PokéAPI](https://github.com/PokeAPI/pokeapi). Model: locally trained EfficientNet-V2-S (FP32), built with [TorchVision](https://docs.pytorch.org/vision/stable/models/efficientnet.html). Fonts: Press Start 2P and Fusion Pixel (SIL OFL 1.1).
 
 [Full asset credits](iDex/Catalog/ATTRIBUTION.md) · [Model provenance](iDex/Recognition/MODEL.md)
 

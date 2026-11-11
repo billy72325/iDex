@@ -20,7 +20,7 @@ struct SelectedModelTests {
         #expect(logits.shape.map(\.intValue) == [1, 1025])
         #expect(logits.dataType == .float32)
         let metadata = try #require(model.modelDescription.metadata[.creatorDefinedKey] as? [String: String])
-        #expect(metadata["checkpoint_sha256"] == "4fec57909ae275c7e0ffa9a8a65c68a1621863dcfc62bcae6d92ca3d81bade0f")
+        #expect(metadata["checkpoint_sha256"] == "6d7e865ab59d9298b15c6e4e29aca811398fd040a68a37b25193f04331681e10")
         #expect(metadata["app_labels_sha256"] == "3b794189d9468b353b7508208446d7be428c3841f04d8d47b2a65f898e0d17dc")
     }
 }

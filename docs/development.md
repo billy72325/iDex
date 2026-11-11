@@ -22,7 +22,7 @@ The catalog covers all 1,025 National Pokédex species with a `generation` field
 
 ## Recognition scope
 
-The app includes a roughly **21 MB FP32 EfficientNet-B0 Core ML model for all 1,025 National Pokédex species** (trained with `scripts/national/`, validation top-1 97.4%). It computes predictions on the device and always selects the highest-ranked Pokémon. A top score of at least 25% and a logit margin of at least 0.5 allow automatic discovery and narration. Weaker results show the top Pokémon's sprite, labelled “Best match” and “Low confidence”, with its actual model score; they are not automatically marked discovered or narrated.
+The app includes a roughly **82 MB FP32 EfficientNet-V2-S Core ML model for all 1,025 National Pokédex species** (trained with `scripts/national/train_v2.py` on artwork composites, web photos and crawled merchandise photos; validation top-1 97.6% on artwork and 98.4% on photos, confidence calibrated by a baked-in temperature). It computes predictions on the device and always selects the highest-ranked Pokémon. A top score of at least 25% and a logit margin of at least 0.5 allow automatic discovery and narration. Weaker results show the top Pokémon's sprite, labelled “Best match” and “Low confidence”, with its actual model score; they are not automatically marked discovered or narrated.
 
 This is a 1,025-class model without a trained unknown/background class. Unrelated objects can still produce false matches, and Generation VIII–IX species with few training images are the weakest. Camera accuracy across toys, cards, lighting, and viewpoints needs physical-device evaluation. The model score is not a calibrated probability. See [model provenance and reproduction](../iDex/Recognition/MODEL.md).
 
@@ -59,7 +59,7 @@ xcrun simctl io booted screenshot --display=1 /tmp/idex-cover.png
 - [PokéAPI](https://github.com/PokeAPI/pokeapi): species names, localized flavor text, dimensions, types, and stats.
 - [PokéAPI cries](https://github.com/PokeAPI/cries): all 1,025 species' latest cries, pinned and converted to mono PCM WAV for offline playback. Regenerate with `python3 scripts/audio/build_cries.py` (development requires `ffmpeg`).
 - Press Start 2P and Fusion Pixel: bundled Latin, Simplified Chinese, Traditional Chinese (zh-TW), and Japanese pixel fonts under SIL OFL 1.1, with license files.
-- Locally trained EfficientNet-B0 FP32 is the user-selected default. Its exact checkpoint, parity results, public-data limits and rollback are in [MODEL.md](../iDex/Recognition/MODEL.md).
+- Locally trained EfficientNet-V2-S FP32 is the user-selected default. Its exact checkpoint, parity results, public-data limits and rollback are in [MODEL.md](../iDex/Recognition/MODEL.md).
 - Physical-device inspiration: [Stuff's DIY Pokédex article](https://stuff.co.za/2026/04/15/the-pokedex-is-real-and-fully-functional-but-youd-have-to-build-your-own/) and [Pokebattler's Pokédex reference](https://articles.pokebattler.com/2018/08/30/pogo-pokedex-by-the-numbers/).
 
 See [catalog attribution](../iDex/Catalog/ATTRIBUTION.md), [model notes](../iDex/Recognition/MODEL.md), and `scripts/` for reproducible catalog, model, and app-icon generation. Pokémon and related characters belong to Nintendo, Creatures, GAME FREAK, and The Pokémon Company. iDex is not affiliated with or endorsed by them.

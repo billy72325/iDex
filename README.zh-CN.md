@@ -67,7 +67,7 @@ iDex 由 H.A. 维护。本分支新增的部分（繁体中文、全国图鉴、
 
 ## 感谢各位人类
 
-像素图：[Pokémon Database](https://pokemondb.net/sprites)。数据与叫声：[PokéAPI](https://github.com/PokeAPI/pokeapi)。模型：使用 [TorchVision](https://docs.pytorch.org/vision/stable/models/efficientnet.html) 本地训练的 EfficientNet-B0（FP32）。字体：Press Start 2P 和 Fusion Pixel（SIL OFL 1.1）。
+像素图：[Pokémon Database](https://pokemondb.net/sprites)。数据与叫声：[PokéAPI](https://github.com/PokeAPI/pokeapi)。模型：使用 [TorchVision](https://docs.pytorch.org/vision/stable/models/efficientnet.html) 本地训练的 EfficientNet-V2-S（FP32）。字体：Press Start 2P 和 Fusion Pixel（SIL OFL 1.1）。
 
 [完整资源署名](iDex/Catalog/ATTRIBUTION.md) · [模型来源](iDex/Recognition/MODEL.md)
 

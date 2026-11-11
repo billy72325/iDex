@@ -1,17 +1,17 @@
 # iDex trained image classifier
 
-iDex bundles a locally trained **EfficientNet-B0 FP32 Core ML model** for all **1,025 National Pokédex species** (Generations I–IX). The complete package is tracked in Git at `KantoClassifier.mlpackage` (the file name is kept so the app's loader is unchanged); a normal clone or GitHub source ZIP includes it. The app performs inference offline and does not download weights or upload photos at runtime.
+iDex bundles a locally trained **EfficientNet-V2-S FP32 Core ML model** for all **1,025 National Pokédex species** (Generations I–IX). The complete package is tracked in Git at `KantoClassifier.mlpackage` (the file name is kept so the app's loader is unchanged); a normal clone or GitHub source ZIP includes it. The app performs inference offline and does not download weights or upload photos at runtime.
 
 ## Artifact and contract
 
-- Version: `national-efficientnet-b0-fp32-4fec57909ae2`.
-- Training checkpoint SHA-256: `4fec57909ae275c7e0ffa9a8a65c68a1621863dcfc62bcae6d92ca3d81bade0f` (`scripts/national/`, 20 epochs on an NVIDIA GB10, validation top-1 0.9745 / top-5 0.9956 on the grouped 2,745-image split; data manifest SHA-256 `df4d69697962f48271d4b7180b310de68bbb5761541cff101822a8d9abd66f23`).
-- Packaged weights SHA-256: `d71923fb6a8e1a7a39864120e86c3f01f77d86caab4166122cdf39b5b26831ab`.
-- Model spec SHA-256: `44d21811621ac9d61b301278f8ce53011227ddba47727b0b7b8bce0d8de9673d`.
+- Version: `national-v3-efficientnet-v2-s-fp32-6d7e865ab59d`.
+- Training checkpoint SHA-256: `6d7e865ab59d9298b15c6e4e29aca811398fd040a68a37b25193f04331681e10` (`scripts/national/train_v2.py` recipe `v2-composite-photo-oe`: v2 trained 40 epochs on RGBA artwork composited onto real backgrounds plus 18,890 web photos and COCO negatives, then v3 warm-started from v2 for 30 epochs with 44,124 model-vetted crawled merchandise photos appended; NVIDIA GB10; validation top-1 0.9759 on 2,779 artwork and 0.9844 on 2,829 photos, negatives max-probability p95 0.115; data manifest SHA-256 `90afe1564b9dd77465d050eba3e5f3f75b4c1ae7aba2dbc3ab1c7966e49dd73f`).
+- Packaged weights SHA-256: `4e34318c7149c1d127828e377d358e7b85a8206267f0789b544ee75bb6eae543`.
+- Model spec SHA-256: `725fccca45aaa99fb98932a8ca167c10b53dadfa920d464d2d64f292ef07b891`.
 - Package: 21,332,540 bytes across three files. Regular Git storage is used, with binary attributes and no LFS filter.
-- Implementation/initialization: TorchVision EfficientNet-B0, initialized from its ImageNet-1K weights and fine-tuned locally. This is trained for iDex, not a claim that the architecture or every input asset originated here. See [model and dataset notices](MODEL_NOTICE.md).
+- Implementation/initialization: TorchVision EfficientNet-V2-S, initialized from its ImageNet-1K weights and fine-tuned locally. This is trained for iDex, not a claim that the architecture or every input asset originated here. See [model and dataset notices](MODEL_NOTICE.md).
 - Input: `image`, fixed 224×224 RGB. ImageType scales by `1/255`; channelwise ImageNet normalization is embedded exactly once (mean `.485,.456,.406`, std `.229,.224,.225`).
-- Output: `logits`, FP32 `[1,1025]` raw finite scores, in exact `pokemon_labels.json` order. No temperature or softmax is embedded.
+- Output: `logits`, FP32 `[1,1025]` finite scores in exact `pokemon_labels.json` order, already divided by the calibration temperature 1.0551 fitted on the validation split (metadata key `baked_temperature`); no softmax is embedded.
 - Label-file SHA-256: `3b794189d9468b353b7508208446d7be428c3841f04d8d47b2a65f898e0d17dc`; IDs 1…1025, National Dex ordering.
 - Conversion: coremltools 9.0 from a TorchScript trace (torch 2.9.1), FP32 mlprogram, minimum deployment iOS 18; trace parity on four probe inputs was exact (max abs error 0.0). On-device logit parity against the PyTorch source has not yet been re-run for this model; the previous Kanto model's record is kept below for reference.
 
